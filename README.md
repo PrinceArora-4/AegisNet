@@ -2,6 +2,8 @@
 
 > A high-performance, lightweight Intrusion Detection System (IDS) powered by a custom-tuned Deep Neural Network. `AegisNet` ingests and sanitizes raw network traffic, performs intelligent feature selection, and uses an auto-optimized model to detect cyber threats with 99%+ accuracy.
 
+**Name Origin:** _Aegis_ (pronounced _ee-jis_) is the mythical shield of Zeus, implying divine, impenetrable protection. _Net_ represents the network. Together, **AegisNet** symbolizes an impenetrable shield protecting your network infrastructure.
+
 ---
 
 ## 🚀 Features
