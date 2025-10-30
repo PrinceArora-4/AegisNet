@@ -9,3 +9,9 @@ __pycache__/
 .DS_Store
 
 .qodo/
+
+# KerasTuner cache
+models/aegisnet_hyperband/
+
+# Predictor output
+prediction_report.csv
