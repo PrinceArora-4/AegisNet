@@ -36,6 +36,9 @@ const TOP_FEATURES = [
 ];
 
 let resultsChartInstance = null;
+let featureChartInstance = null;
+let currentThreatIndices = [];
+let currentThreatDetails = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   // Ensure submit button is disabled on initial load regardless of HTML state
@@ -91,8 +94,128 @@ document.addEventListener('DOMContentLoaded', () => {
   const threatMoreText = document.getElementById('threat-more-text');
   const downloadThreatBtn = document.getElementById('download-threat-btn');
 
-  // Store threat indices globally for download
-  let currentThreatIndices = [];
+  // CSV Modal Elements
+  const openCsvPreviewBtn = document.getElementById('openCsvPreviewBtn');
+  const csvModal = document.getElementById('csvModal');
+  const csvModalBackdrop = document.getElementById('csvModalBackdrop');
+  const csvModalContent = document.getElementById('csvModalContent');
+  const closeCsvModalBtn = document.getElementById('closeCsvModalBtn');
+  const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+  const csvModalStats = document.getElementById('csv-modal-stats');
+  const csvModalColumns = document.getElementById('csv-modal-columns');
+  const csvModalThead = document.getElementById('csv-modal-thead');
+  const csvModalTbody = document.getElementById('csv-modal-tbody');
+  const csvModalResizeHandle = document.getElementById('csvModalResizeHandle');
+  // Ensure CSV Preview button starts disabled
+  if (openCsvPreviewBtn) {
+    openCsvPreviewBtn.disabled = true;
+  }
+
+  // Global storage for parsed CSV (preview subset + file ref)
+  let latestCsvMeta = null; // { columns:[], previewRows:[], file:File, totalRows:number }
+
+  // Quick Insights Elements
+  const quickInsights = document.getElementById('quick-insights');
+  const insightsLine = document.getElementById('insights-line');
+  const metricThreatPct = document.getElementById('metric-threat-pct');
+  const metricBenignCount = document.getElementById('metric-benign-count');
+  const metricAttackCount = document.getElementById('metric-attack-count');
+
+  // Feature Importance Chart
+  const fiChartContainer = document.getElementById('fiChartContainer');
+  const featureChartEl = document.getElementById('featureChart');
+
+  // System Console
+  const systemConsoleBody = document.getElementById('system-console-body');
+  const themeToggle = document.getElementById('themeToggle');
+  const themeOverlay = document.getElementById('themeOverlay');
+  const systemLed = document.getElementById('systemLed');
+  // ===============================
+  // THEME SYSTEM
+  // ===============================
+  function setSystemLed(state) {
+    if (!systemLed) return;
+    systemLed.setAttribute('data-state', state);
+  }
+
+  function applyTheme(theme, { animate = false } = {}) {
+    const finalTheme = theme === 'magenta' ? 'magenta' : 'neon';
+    if (animate && themeOverlay) {
+      // start overlay + LED transition state
+      document.body.classList.add('overlay-active');
+      setSystemLed('transition');
+      // mid-sweep: perform the theme swap
+      setTimeout(() => {
+        document.documentElement.setAttribute('data-theme', finalTheme);
+        localStorage.setItem('aegisnet-theme', finalTheme);
+        updateChartTheme(finalTheme);
+      }, 250);
+      // end sweep: clear overlay and set LED to target theme
+      setTimeout(() => {
+        document.body.classList.remove('overlay-active');
+        setSystemLed(finalTheme);
+      }, 600);
+    } else {
+      document.documentElement.setAttribute('data-theme', finalTheme);
+      localStorage.setItem('aegisnet-theme', finalTheme);
+      updateChartTheme(finalTheme);
+      setSystemLed(finalTheme);
+    }
+  }
+
+  function updateChartTheme(theme) {
+    const isMagenta = theme === 'magenta';
+    const doughnutColors = isMagenta
+      ? ['#ff00ff', '#00bfff']
+      : ['#00ff00', '#ff3333'];
+    const titleColor = isMagenta ? '#ff00ff' : '#00ffff';
+    const legendColor = isMagenta ? '#ff00ff' : '#00ff00';
+    if (resultsChartInstance) {
+      resultsChartInstance.data.datasets[0].backgroundColor = doughnutColors;
+      resultsChartInstance.data.datasets[0].borderColor = doughnutColors;
+      if (resultsChartInstance.options.plugins?.title) {
+        resultsChartInstance.options.plugins.title.color = titleColor;
+      }
+      if (resultsChartInstance.options.plugins?.legend?.labels) {
+        resultsChartInstance.options.plugins.legend.labels.color = legendColor;
+      }
+      resultsChartInstance.update();
+    }
+    if (featureChartInstance) {
+      const accent = isMagenta ? '#00bfff' : '#00ffff';
+      const primary = isMagenta ? '#ff00ff' : '#00ff00';
+      featureChartInstance.data.datasets[0].backgroundColor = accent + 'AA';
+      featureChartInstance.data.datasets[0].borderColor = accent;
+      if (featureChartInstance.options.plugins?.title) {
+        featureChartInstance.options.plugins.title.color = accent;
+      }
+      if (featureChartInstance.options.scales) {
+        featureChartInstance.options.scales.x.ticks.color = primary;
+        featureChartInstance.options.scales.y.ticks.color = primary;
+        featureChartInstance.options.scales.x.grid.color =
+          accent.replace('#', '#') + '33';
+        featureChartInstance.options.scales.y.grid.color =
+          accent.replace('#', '#') + '33';
+      }
+      featureChartInstance.update();
+    }
+  }
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const current = localStorage.getItem('aegisnet-theme') || 'neon';
+      const next = current === 'neon' ? 'magenta' : 'neon';
+      applyTheme(next, { animate: true });
+      if (typeof toastr !== 'undefined') {
+        toastr.info(`Theme switched to ${next.toUpperCase()}`, '🎨 Theme');
+      }
+    });
+  }
+
+  // Initialize saved theme
+  applyTheme(localStorage.getItem('aegisnet-theme') || 'neon', {
+    animate: false,
+  });
 
   // ===============================
   // INITIAL SETUP
@@ -128,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('🔄 File input cleared — disabling submit');
       fileNameDisplay.textContent = '';
       submitBtn.disabled = true;
+      if (openCsvPreviewBtn) openCsvPreviewBtn.disabled = true;
     }
   });
 
@@ -158,6 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.value = '';
         fileNameDisplay.textContent = '';
         submitBtn.disabled = true;
+        if (openCsvPreviewBtn) openCsvPreviewBtn.disabled = true;
       }
     }
   });
@@ -188,6 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.disabled = false;
     console.log('✅ Valid CSV detected — submit button enabled');
     toastr.info(`File ready for analysis: ${file.name}`);
+
+    // Parse CSV (header + first 50 rows) for modal preview
+    parseCsvForModal(file);
   }
 
   // ===============================
@@ -219,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Validation passed - proceed with analysis
     console.log(`🚀 Starting analysis for file: ${file.name}`);
+    consoleLog('> Initializing Sentinel Core...', 'info');
     submitBtn.disabled = true;
     showLoader();
     toastr.info('🔍 Analyzing file... Please wait.', 'Processing');
@@ -227,6 +356,8 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('file', file);
 
     try {
+      consoleLog('> Dataset validated successfully.', 'success');
+      consoleLog('> Running deep threat scan...', 'info');
       const response = await fetch(`${API_BASE_URL}/predict`, {
         method: 'POST',
         body: formData,
@@ -240,6 +371,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.status === 'success') {
         updateUIWithResults(data);
+        consoleLog(
+          `> ${data.attack_count} threats detected across ${
+            data.feature_importances
+              ? Object.keys(data.feature_importances).length
+              : 0
+          } feature clusters.`,
+          'success'
+        );
+        consoleLog('> Analysis complete.', 'success');
         toastr.success(
           `✅ Analysis complete. ${data.attack_count} threats detected.`,
           'Success'
@@ -251,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideLoader();
       submitBtn.disabled = false;
       console.error('❌ File Upload Error:', error);
+      consoleLog(`> Error: ${error.message}`, 'error');
       toastr.error(`Analysis Failed: ${error.message}`, 'Error');
     } finally {
       submitBtn.disabled = false;
@@ -338,7 +479,13 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('❌ Chart canvas not found');
       return;
     }
-
+    const theme = document.documentElement.getAttribute('data-theme') || 'neon';
+    const isMagenta = theme === 'magenta';
+    const doughnutColors = isMagenta
+      ? ['#ff00ff', '#00bfff']
+      : ['#00ff00', '#ff3333'];
+    const legendColor = isMagenta ? '#ff00ff' : '#00ff00';
+    const titleColor = isMagenta ? '#ff00ff' : '#00ffff';
     resultsChartInstance = new Chart(ctx.getContext('2d'), {
       type: 'doughnut',
       data: {
@@ -346,8 +493,8 @@ document.addEventListener('DOMContentLoaded', () => {
         datasets: [
           {
             data: [0, 0],
-            backgroundColor: ['#00ff00', '#ff3333'],
-            borderColor: ['#00ff00', '#ff3333'],
+            backgroundColor: doughnutColors,
+            borderColor: doughnutColors,
             borderWidth: 2,
           },
         ],
@@ -359,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
           legend: {
             position: 'bottom',
             labels: {
-              color: '#00ff00',
+              color: legendColor,
               font: { family: 'Share Tech Mono', size: 14 },
               padding: 20,
             },
@@ -367,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
           title: {
             display: true,
             text: 'THREAT ANALYSIS',
-            color: '#00ffff',
+            color: titleColor,
             font: { family: 'Share Tech Mono', size: 18, weight: 'bold' },
             padding: 20,
           },
@@ -378,7 +525,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateUIWithResults(data) {
-    const { total_flows, benign_count, attack_count, threat_indices } = data;
+    const {
+      total_flows,
+      benign_count,
+      attack_count,
+      threat_indices,
+      threat_details,
+      feature_importances,
+    } = data;
 
     awaitingData.style.display = 'none';
     chartContainer.style.display = 'block';
@@ -396,10 +550,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle threat indices display
     if (threat_indices && threat_indices.length > 0) {
       currentThreatIndices = threat_indices;
+      currentThreatDetails = Array.isArray(threat_details)
+        ? threat_details
+        : [];
       displayThreatIndices(threat_indices);
       threatRecordsPanel.classList.add('active');
     } else {
       threatRecordsPanel.classList.remove('active');
+    }
+
+    // Quick Insights
+    const pct =
+      total_flows > 0
+        ? ((attack_count / total_flows) * 100).toFixed(2)
+        : '0.00';
+    insightsLine.textContent = `Out of ${total_flows.toLocaleString()} total flows, ${attack_count.toLocaleString()} (${pct}%) were identified as potential threats.`;
+    metricThreatPct.textContent = `${pct}%`;
+    metricBenignCount.textContent = `${benign_count.toLocaleString()} benign`;
+    metricAttackCount.textContent = `${attack_count.toLocaleString()} threats`;
+    quickInsights.style.display = 'block';
+    requestAnimationFrame(() => quickInsights.classList.add('show'));
+
+    // Feature Importance chart (optional)
+    if (feature_importances && typeof feature_importances === 'object') {
+      const labels = Object.keys(feature_importances);
+      const values = Object.values(feature_importances).map((v) =>
+        Number((v * 100).toFixed(2))
+      );
+      renderFeatureChart(labels, values);
+      fiChartContainer.style.display = 'block';
+    } else {
+      fiChartContainer.style.display = 'none';
     }
 
     submitBtn.disabled = false;
@@ -482,40 +663,288 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function downloadThreatLog() {
-    if (!currentThreatIndices || currentThreatIndices.length === 0) {
+    if (!currentThreatDetails || currentThreatDetails.length === 0) {
       toastr.warning('⚠️ No threat records to download.');
       return;
     }
-
-    // Create text content
+    // Build CSV content
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    let content = `AegisNet Sentinel - Threat Records Log\n`;
-    content += `Generated: ${new Date().toLocaleString()}\n`;
-    content += `Total Threats Identified: ${currentThreatIndices.length}\n`;
-    content += `${'='.repeat(60)}\n\n`;
-    content += `Threat Row Indices (1-based):\n`;
-    content += currentThreatIndices.join(', ');
-    content += `\n\n${'='.repeat(60)}\n`;
-    content += `End of Report\n`;
+    const headers = ['row_number', 'predicted_label', 'confidence_score'];
+    const rows = currentThreatDetails.map((d) => [
+      d.row_number,
+      d.predicted_label,
+      d.confidence_score,
+    ]);
+    const csvLines = [headers.join(','), ...rows.map((r) => r.join(','))];
+    const csvContent = csvLines.join('\n');
 
-    // Create blob and download
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `AegisNet_Threat_Log_${timestamp}.txt`;
+    link.download = `AegisNet_Threat_Log_${timestamp}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
     toastr.success(
-      `📥 Threat log downloaded: ${currentThreatIndices.length} records`,
+      `📥 Threat CSV downloaded: ${rows.length} rows`,
       'Download Complete'
     );
-    console.log(
-      `✅ Downloaded threat log with ${currentThreatIndices.length} indices`
-    );
+    console.log(`✅ Downloaded threat CSV with ${rows.length} rows`);
+  }
+
+  function renderFeatureChart(labels, values) {
+    if (!featureChartEl) return;
+    if (featureChartInstance) {
+      featureChartInstance.destroy();
+    }
+    const theme = document.documentElement.getAttribute('data-theme') || 'neon';
+    const isMagenta = theme === 'magenta';
+    const accent = isMagenta ? '#00bfff' : '#00ffff';
+    const primary = isMagenta ? '#ff00ff' : '#00ff00';
+    featureChartInstance = new Chart(featureChartEl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Importance (%)',
+            data: values,
+            backgroundColor: accent + 'AA',
+            borderColor: accent,
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            labels: { color: accent, font: { family: 'Share Tech Mono' } },
+          },
+          title: {
+            display: true,
+            text: '🔥 Top Threat-Influencing Features',
+            color: accent,
+            font: { family: 'Share Tech Mono', size: 18, weight: 'bold' },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: primary, font: { family: 'Share Tech Mono' } },
+            grid: { color: 'rgba(0, 191, 255, 0.15)' },
+          },
+          y: {
+            ticks: { color: primary, font: { family: 'Share Tech Mono' } },
+            grid: { color: 'rgba(0, 191, 255, 0.15)' },
+          },
+        },
+      },
+    });
+  }
+
+  // ===============================
+  // CSV PREVIEW FUNCTIONS
+  // ===============================
+  // ===============================
+  // CSV MODAL PARSING & RENDERING
+  // ===============================
+  function parseCsvForModal(file) {
+    if (!file) return;
+    const usePapa = typeof Papa !== 'undefined';
+    if (usePapa) {
+      Papa.parse(file, {
+        header: true,
+        preview: 50, // capture more rows for richer preview
+        skipEmptyLines: true,
+        complete: (results) => {
+          const columns = results.meta?.fields || [];
+          const rows = results.data || [];
+          latestCsvMeta = {
+            columns,
+            previewRows: rows,
+            file,
+            totalRows: rows.length, // approximate (preview size)
+          };
+          if (openCsvPreviewBtn) {
+            openCsvPreviewBtn.disabled = false;
+          }
+          consoleLog(
+            `> CSV parsed: ${columns.length} columns, preview ${rows.length} rows`,
+            'success'
+          );
+        },
+        error: (err) => {
+          console.error('PapaParse error:', err);
+          fallbackFileReader(file);
+        },
+      });
+    } else {
+      fallbackFileReader(file);
+    }
+  }
+
+  function fallbackFileReader(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      if (!lines.length) return;
+      const header = lines[0].split(',');
+      const rowsRaw = lines.slice(1, 51).map((line) => line.split(','));
+      const rows = rowsRaw.map((r) =>
+        Object.fromEntries(r.map((v, i) => [header[i], v]))
+      );
+      latestCsvMeta = {
+        columns: header,
+        previewRows: rows,
+        file,
+        totalRows: rows.length,
+      };
+      if (openCsvPreviewBtn) openCsvPreviewBtn.disabled = false;
+      consoleLog(
+        `> CSV parsed (fallback): ${header.length} columns, preview ${rows.length} rows`,
+        'info'
+      );
+    };
+    reader.readAsText(file);
+  }
+
+  function openCsvModal() {
+    if (!latestCsvMeta || !csvModal) return;
+    // Clear previous
+    csvModalColumns.innerHTML = '';
+    csvModalThead.innerHTML = '';
+    csvModalTbody.innerHTML = '';
+    csvModalStats.textContent = '';
+
+    const { columns, previewRows, totalRows } = latestCsvMeta;
+    // Columns chips
+    columns.forEach((col) => {
+      const span = document.createElement('span');
+      span.textContent = col;
+      csvModalColumns.appendChild(span);
+    });
+    csvModalStats.textContent = `Columns: ${columns.length} | Preview Rows: ${previewRows.length}`;
+    // Header row
+    const trHead = document.createElement('tr');
+    columns.forEach((c) => {
+      const th = document.createElement('th');
+      th.textContent = c;
+      trHead.appendChild(th);
+    });
+    csvModalThead.appendChild(trHead);
+    // Body rows
+    previewRows.forEach((rowObj) => {
+      const tr = document.createElement('tr');
+      columns.forEach((c) => {
+        const td = document.createElement('td');
+        td.textContent = rowObj[c];
+        tr.appendChild(td);
+      });
+      csvModalTbody.appendChild(tr);
+    });
+
+    csvModal.style.display = 'block';
+    csvModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+    if (closeCsvModalBtn) closeCsvModalBtn.focus();
+  }
+
+  function closeCsvModal() {
+    if (!csvModal) return;
+    csvModal.style.display = 'none';
+    csvModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('no-scroll');
+  }
+
+  // Resize logic
+  let resizing = false;
+  let startX = 0;
+  let startY = 0;
+  let startW = 0;
+  let startH = 0;
+  if (csvModalResizeHandle) {
+    csvModalResizeHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = csvModalContent.getBoundingClientRect();
+      startW = rect.width;
+      startH = rect.height;
+      document.addEventListener('mousemove', resizeModal);
+      document.addEventListener('mouseup', stopResize);
+    });
+  }
+
+  function resizeModal(e) {
+    if (!resizing) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    let newW = startW + dx;
+    let newH = startH + dy;
+    // Bounds
+    newW = Math.max(480, Math.min(newW, window.innerWidth * 0.95));
+    newH = Math.max(320, Math.min(newH, window.innerHeight * 0.85));
+    csvModalContent.style.width = newW + 'px';
+    csvModalContent.style.height = newH + 'px';
+  }
+
+  function stopResize() {
+    resizing = false;
+    document.removeEventListener('mousemove', resizeModal);
+    document.removeEventListener('mouseup', stopResize);
+  }
+
+  // Event bindings for modal
+  if (openCsvPreviewBtn) {
+    openCsvPreviewBtn.addEventListener('click', () => openCsvModal());
+  }
+  if (closeCsvModalBtn) {
+    closeCsvModalBtn.addEventListener('click', () => closeCsvModal());
+  }
+  if (csvModalBackdrop) {
+    csvModalBackdrop.addEventListener('click', () => closeCsvModal());
+  }
+  if (downloadCsvBtn) {
+    downloadCsvBtn.addEventListener('click', () => {
+      if (!latestCsvMeta || !latestCsvMeta.file) {
+        toastr.warning('⚠️ No CSV loaded.');
+        return;
+      }
+      const file = latestCsvMeta.file;
+      const blobUrl = URL.createObjectURL(file);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = file.name || 'dataset.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toastr.success('📥 Original CSV downloaded.', 'Download Complete');
+    });
+  }
+
+  // ESC key handling
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && csvModal && csvModal.style.display === 'block') {
+      closeCsvModal();
+    }
+  });
+
+  // ===============================
+  // SYSTEM CONSOLE FUNCTIONS
+  // ===============================
+  function consoleLog(message, type = 'info') {
+    if (!systemConsoleBody) return;
+    const line = document.createElement('div');
+    line.className = `console-line ${type}`;
+    line.textContent = message;
+    systemConsoleBody.appendChild(line);
+    systemConsoleBody.scrollTop = systemConsoleBody.scrollHeight;
   }
 
   console.log('✅ Initialization Complete');

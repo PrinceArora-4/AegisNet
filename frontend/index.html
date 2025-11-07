@@ -31,11 +31,15 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- PapaParse for CSV preview -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
+    <div id="themeOverlay" class="theme-overlay"></div>
     <!-- NEON LOADER OVERLAY -->
     <div id="neon-loader">
       <div class="neon-spinner"></div>
@@ -43,7 +47,16 @@
     </div>
 
     <!-- HEADER -->
-    <div class="header-title">[AEGISNET]</div>
+    <div class="header-title">
+      [AEGISNET]
+      <div class="theme-toggle" id="themeToggle"><span>🌗</span></div>
+      <div
+        class="system-led"
+        id="systemLed"
+        data-state="neon"
+        aria-label="System Theme LED"
+      ></div>
+    </div>
 
     <!-- MAIN CONTAINER -->
     <div class="container">
@@ -73,6 +86,13 @@
 
           <!-- File Name Display -->
           <div class="file-name" id="fileName"></div>
+
+          <!-- CSV Preview Trigger -->
+          <div class="file-actions" style="margin-top: 0.75rem">
+            <button id="openCsvPreviewBtn" class="csv-preview-toggle" disabled>
+              🔍 Preview CSV Data
+            </button>
+          </div>
 
           <!-- Submit Button -->
           <button class="submit-btn" id="submitBtn" disabled>
@@ -121,6 +141,35 @@
               <canvas id="threatChart"></canvas>
             </div>
 
+            <!-- QUICK INSIGHTS PANEL -->
+            <div
+              id="quick-insights"
+              class="quick-insights"
+              style="display: none"
+            >
+              <div class="insights-line" id="insights-line"></div>
+              <div class="insights-metrics">
+                <span class="metric metric-cyan" id="metric-threat-pct"
+                  >0%</span
+                >
+                <span class="metric metric-green" id="metric-benign-count"
+                  >0 benign</span
+                >
+                <span class="metric metric-red" id="metric-attack-count"
+                  >0 threats</span
+                >
+              </div>
+            </div>
+
+            <!-- OPTIONAL FEATURE IMPORTANCE BAR CHART -->
+            <div
+              class="chart-container"
+              id="fiChartContainer"
+              style="display: none"
+            >
+              <canvas id="featureChart"></canvas>
+            </div>
+
             <div
               class="readout-container"
               id="readoutContainer"
@@ -162,6 +211,50 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- SYSTEM CONSOLE PANEL -->
+    <div class="system-console" id="system-console">
+      <div class="system-console-title">[ Sentinel System Console ]</div>
+      <div class="system-console-body" id="system-console-body"></div>
+    </div>
+
+    <!-- CSV PREVIEW MODAL -->
+    <div
+      id="csvModal"
+      class="csv-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      style="display: none"
+    >
+      <div class="csv-modal-backdrop" id="csvModalBackdrop"></div>
+      <div class="csv-modal-content" id="csvModalContent" role="document">
+        <div class="csv-modal-header">
+          <h3 class="csv-preview-title" style="margin: 0">🧾 CSV Preview</h3>
+          <div class="csv-modal-actions">
+            <span class="csv-modal-stats" id="csv-modal-stats"></span>
+            <button id="downloadCsvBtn" class="csv-preview-toggle">
+              Download CSV
+            </button>
+            <button id="closeCsvModalBtn" class="csv-preview-toggle">
+              Close
+            </button>
+          </div>
+        </div>
+        <div class="csv-modal-columns" id="csv-modal-columns"></div>
+        <div class="csv-modal-table-wrapper">
+          <table class="csv-preview-table">
+            <thead id="csv-modal-thead"></thead>
+            <tbody id="csv-modal-tbody"></tbody>
+          </table>
+        </div>
+        <div
+          class="csv-modal-resize-handle"
+          id="csvModalResizeHandle"
+          aria-hidden="true"
+        ></div>
       </div>
     </div>
 

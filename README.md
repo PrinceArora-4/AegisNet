@@ -17,6 +17,17 @@
   1.  **`main.py`:** A complete training pipeline to build and save the champion model.
   2.  **`predictor.py`:** A lightweight, standalone script to load the saved model and run high-speed predictions on new, unseen data.
 
+> v3.0 Additions:
+
+- **CSV Preview Modal (scrollable & resizable):** A macOS Quick Look–style preview to inspect the first rows and all columns of large CSVs without breaking layout. Horizontal and vertical scroll supported, with draggable resize handle.
+- **Threat Insights Panel:** Summarizes total flows, benign vs. threat counts, and percentage breakdown with quick metrics and chart visualizations.
+- **Real Trained Model Integration:** The Flask API loads the shipped Keras model (`models/aegisnet_v1.keras`) and scaler to produce live predictions for both batch CSV and single-flow inputs.
+- **Threat Log Export:** One-click export of detected threat rows to CSV, including `row_number`, `predicted_label`, and `confidence_score`.
+- **System Console Log:** In-app console shows processing steps, status updates, and errors to aid debugging and demos.
+- **Cross-Origin Fixed Flask API:** CORS enabled for local development so the frontend can call the backend safely across ports.
+- **Optional Theme Toggle (Neon ↔ Magenta):** Style-ready theming hooks to switch palette for presentations (can be enabled in UI code).
+- **Optional Audio Feedback:** Hooks to play subtle system sounds on success/error to improve operator awareness (disabled by default).
+
 ---
 
 ## 🎯 Tech Stack
@@ -32,6 +43,11 @@
 
 ---
 
+Additional v3.0 Runtime Libraries:
+
+- **Flask Extensions:** `flask`, `flask_cors` (CORS), `flask_compress` (gzip/brotli). Optional: `flask_limiter`, `flask_talisman` for rate limiting and security headers (production hardening).
+- **Frontend Libraries:** `Chart.js` (visualizations), `Toastr` (notifications), `PapaParse` (client-side CSV parsing/preview).
+
 ## 📁 Folder Structure
 
 ```bash
@@ -42,6 +58,10 @@ AegisNet/
 ├── 📁 models/
 │   ├── 📄 aegisnet_scaler.joblib # Saved Data Scaler
 │   └── 📄 aegisnet_v1.keras    # Saved Champion Model
+├── 📁 frontend/
+│   ├── 🖥️ index.html           # v3.0 UI (drag/drop, modal preview, insights)
+│   ├── 🧠 script.js            # Frontend logic (charts, console, CSV preview)
+│   └── 🎨 style.css            # Cyberpunk neon/magenta themes
 ├── 📁 reports/
 │   ├── 🖼️ aegisnet_v1_accuracy.png
 │   └── 🖼️ aegisnet_v1_loss.png
@@ -56,6 +76,7 @@ AegisNet/
 │   ├── 🐍 model_trainer.py
 │   └── 🐍 report_generator.py
 ├── ⚙️ .gitignore
+├── 🐍 app.py                 # Flask API (batch + single-flow prediction, CORS)
 ├── 🐍 main.py                 # The "Factory" (Trains the model)
 ├── 🐍 predictor.py            # The "Product" (Runs predictions)
 ├── 📜 requirements.txt
@@ -174,6 +195,33 @@ python predictor.py data/Monday-WorkingHours.pcap_ISCX.csv
 
 This will load your saved model, run predictions, and save a `prediction_report.csv` file in your root directory.
 
+### Run 4: Start the Flask API (v3.0 UI Backend)
+
+Run the backend API (default port: `5001`). Ensure your virtual environment is activated and dependencies installed.
+
+```bash
+python app.py
+```
+
+If you need to change the port, set the `PORT` environment variable.
+
+```bash
+export PORT=5001
+python app.py
+```
+
+> CORS Note: The API enables CORS for local development so the browser-based frontend can call `http://127.0.0.1:5001` from a file:// or another port.
+
+### Run 5: Open the Frontend (v3.0 UI)
+
+Open `frontend/index.html` directly in your browser (double-click) or serve it with any static file server. The UI provides:
+
+- Drag & drop CSV upload
+- CSV Preview Modal (scrollable + resizable)
+- Threat Insights Panel with charts
+- Threat Log Export (CSV)
+- System Console output
+
 ---
 
 ## 📜 Requirements (`requirements.txt`)
@@ -240,19 +288,23 @@ wrapt==2.0.0
 
 ## 📌 Core Functional Files
 
-| File                   | Description                                                           |
-| :--------------------- | :-------------------------------------------------------------------- |
-| **`main.py`**          | **The "Factory"**: Main training pipeline that runs all 5 phases.     |
-| **`predictor.py`**     | **The "Product"**: Standalone script to run predictions on new data.  |
-| `setup.sh`             | Shell script to install `kaggle` and download the correct dataset.    |
-| `config.py`            | Central configuration for file paths, features, and model thresholds. |
-| `data_loader.py`       | Module to load and combine all 8 CSV files.                           |
-| `data_preprocessor.py` | Cleans, scales, and splits the data. Saves the `scaler.joblib`.       |
-| `feature_selector.py`  | Runs `RandomForestClassifier` to find and rank the best features.     |
-| `model_builder.py`     | Defines the `Hypermodel` architecture for KerasTuner to search.       |
-| `model_trainer.py`     | Contains the logic for training the final champion model.             |
-| `model_evaluator.py`   | Generates the final Classification Report and Confusion Matrix.       |
-| `report_generator.py`  | Saves the `accuracy.png` and `loss.png` plots.                        |
+| File                   | Description                                                                                      |
+| :--------------------- | :----------------------------------------------------------------------------------------------- |
+| **`app.py`**           | **The API**: Flask service exposing `/predict` (CSV) and `/predict_single` (JSON). CORS enabled. |
+| **`main.py`**          | **The "Factory"**: Main training pipeline that runs all 5 phases.                                |
+| **`predictor.py`**     | **The "Product"**: Standalone script to run predictions on new data.                             |
+| `frontend/index.html`  | Web UI layout for v3.0 (drag/drop, modal, insights, console).                                    |
+| `frontend/script.js`   | UI logic: CSV parsing (PapaParse), charts (Chart.js), Toastr, console.                           |
+| `frontend/style.css`   | Cyberpunk theme, modal styling, accessibility-focused UI.                                        |
+| `setup.sh`             | Shell script to install `kaggle` and download the correct dataset.                               |
+| `config.py`            | Central configuration for file paths, features, and model thresholds.                            |
+| `data_loader.py`       | Module to load and combine all 8 CSV files.                                                      |
+| `data_preprocessor.py` | Cleans, scales, and splits the data. Saves the `scaler.joblib`.                                  |
+| `feature_selector.py`  | Runs `RandomForestClassifier` to find and rank the best features.                                |
+| `model_builder.py`     | Defines the `Hypermodel` architecture for KerasTuner to search.                                  |
+| `model_trainer.py`     | Contains the logic for training the final champion model.                                        |
+| `model_evaluator.py`   | Generates the final Classification Report and Confusion Matrix.                                  |
+| `report_generator.py`  | Saves the `accuracy.png` and `loss.png` plots.                                                   |
 
 ---
 
@@ -260,6 +312,18 @@ wrapt==2.0.0
 
 - ✅ **Current:** The project is fully functional for local execution. The `main.py` script trains the model, and `predictor.py` consumes it.
 - ⚙️ **Future Scope:** The `predictor.py` script can be easily wrapped in a **Flask API**. A new `app.py` could be built to provide a web endpoint that accepts a CSV, runs the prediction, and returns the results as JSON. This API could then be Dockerized and deployed to a cloud service.
+
+**Architecture Flow (v3.0):**
+
+```text
+[Browser UI]
+  └─► Drag/Drop CSV → PapaParse preview → "Initiate Analysis"
+      └─► HTTP POST /predict (Flask)
+          └─► Load Scaler + Keras Model
+              └─► Preprocess → Predict → Threat Details + Feature Importances
+                  └─► JSON Response (counts, indices, confidences)
+                      └─► Frontend renders: charts (Chart.js), insights, threat log panel
+```
 
 ---
 
@@ -269,6 +333,8 @@ wrapt==2.0.0
 - 🧠 **AutoML:** Demonstrates a modern workflow using KerasTuner to find an optimal model, rather than just guessing.
 - 🎯 **High-Performance:** Achieves 99%+ accuracy and 99.6% precision by intelligently balancing metrics and tuning the decision threshold.
 - 📦 **Modular Code:** Fully modularized Python scripts in the `src/` folder make the project clean, scalable, and easy to maintain.
+- 🖥️ **Interactive UI (v3.0):** CSV Preview Modal (scrollable/resizable), Threat Insights, Feature Importance chart, and System Console.
+- 📥 **Threat Log Export:** Export detected threats with confidence scores as CSV for audits and forensics.
 
 ---
 
