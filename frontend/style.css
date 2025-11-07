@@ -1,0 +1,654 @@
+/* ============================================ */
+/* CYBERPUNK THEME - BASE STYLES */
+/* ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #00ff00;
+  font-family: 'Share Tech Mono', 'IBM Plex Mono', monospace;
+  overflow-x: hidden;
+  overflow-y: scroll; /* Always show vertical scrollbar for consistent theming */
+  position: relative;
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #00ff00 #000000; /* Firefox thumb and track */
+}
+
+/* ============================================ */
+/* SCANLINES OVERLAY EFFECT */
+/* ============================================ */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 0, 0.03) 0px,
+    rgba(0, 255, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  animation: scanlines 10s linear infinite;
+}
+
+@keyframes scanlines {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+/* ============================================ */
+/* HEADER WITH FLICKER ANIMATION */
+/* ============================================ */
+.header-title {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 2rem 0;
+  color: #00ff00;
+  text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+  letter-spacing: 0.2rem;
+  animation: flicker 3s infinite alternate;
+}
+
+@keyframes flicker {
+  0%,
+  18%,
+  22%,
+  25%,
+  53%,
+  57%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+  }
+  20%,
+  24%,
+  55% {
+    opacity: 0.8;
+    text-shadow: none;
+  }
+}
+
+/* ============================================ */
+/* MAIN CONTAINER */
+/* ============================================ */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ============================================ */
+/* TWO-COLUMN LAYOUT */
+/* ============================================ */
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================ */
+/* PANEL STYLING */
+/* ============================================ */
+.panel {
+  background: rgba(0, 255, 0, 0.05);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.panel-title {
+  font-size: 1.5rem;
+  color: #00ffff;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15rem;
+  text-shadow: 0 0 10px #00ffff;
+}
+
+/* ============================================ */
+/* DROPZONE */
+/* ============================================ */
+.dropzone {
+  border: 3px dashed #00ff00;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone.drag-over {
+  border-color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+  transform: scale(1.02);
+}
+
+.dropzone-text {
+  font-size: 1.2rem;
+  color: #00ff00;
+  margin-bottom: 1rem;
+}
+
+.dropzone-subtext {
+  font-size: 0.9rem;
+  color: #00ffff;
+  opacity: 0.7;
+}
+
+/* ============================================ */
+/* FILE INPUT */
+/* ============================================ */
+.file-input {
+  display: none;
+}
+
+.file-input-label {
+  display: block;
+  padding: 1rem 2rem;
+  border: 2px solid #00ff00;
+  color: #00ff00;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  transition: 0.3s;
+}
+
+.file-input-label:hover {
+  background: rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ============================================ */
+/* BUTTONS */
+/* ============================================ */
+.submit-btn {
+  width: 100%;
+  padding: 1.2rem;
+  background: linear-gradient(135deg, #00ff00, #00ffff);
+  color: #0a0a0a;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15rem;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+  transition: 0.3s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 0 40px rgba(0, 255, 0, 0.8);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================ */
+/* RESULTS */
+/* ============================================ */
+.results-section {
+  min-height: 400px;
+}
+
+.awaiting-data {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-size: 1.5rem;
+  color: #00ffff;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.chart-container {
+  max-width: 400px;
+  margin: 0 auto 2rem;
+}
+
+/* ============================================ */
+/* READOUT */
+/* ============================================ */
+.readout-container {
+  margin-top: 2rem;
+}
+
+.readout-item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-left: 4px solid #00ff00;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.readout-label {
+  color: #00ffff;
+  text-transform: uppercase;
+}
+
+.readout-value {
+  color: #00ff00;
+  font-size: 1.4rem;
+}
+
+.readout-item.threat {
+  border-left-color: #ff3333;
+}
+
+.readout-item.threat .readout-value {
+  color: #ff3333;
+  text-shadow: 0 0 10px #ff3333;
+}
+
+/* ============================================ */
+/* SPINNER */
+/* ============================================ */
+.spinner {
+  display: none;
+  border: 4px solid rgba(0, 255, 0, 0.3);
+  border-top: 4px solid #00ff00;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 1rem auto;
+}
+
+.spinner.active {
+  display: block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* (Removed misplaced overflow-y declaration injected erroneously) */
+/* ============================================ */
+/* MANUAL FORM - SCROLLABLE CYBERPUNK STYLING */
+/* ============================================ */
+.manual-section {
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 2px solid rgba(0, 255, 0, 0.3);
+}
+
+#manual-form-inputs {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+  padding-right: 0.5rem;
+}
+
+.manual-input-group {
+  margin-bottom: 1rem;
+}
+
+.manual-input-label {
+  color: #00ffff;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  display: block;
+  text-transform: uppercase;
+}
+
+.manual-input-field {
+  width: 100%;
+  padding: 0.7rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #00ff00;
+  color: #00ff00;
+}
+
+.manual-result {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 2px solid #00ff00;
+  text-align: center;
+  font-size: 1.1rem;
+  color: #00ffff;
+  opacity: 0.6;
+  min-height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.manual-result.safe {
+  border-color: #00ff00;
+  color: #00ff00;
+  opacity: 1;
+}
+
+.manual-result.danger {
+  border-color: #ff3333;
+  color: #ff3333;
+  opacity: 1;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 51, 51, 0.8);
+  }
+}
+
+/* ============================================ */
+/* NEON LOADER OVERLAY */
+/* ============================================ */
+#neon-loader {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 99999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#neon-loader.active {
+  display: flex;
+  opacity: 1;
+}
+
+.neon-spinner {
+  width: 80px;
+  height: 80px;
+  border: 6px solid transparent;
+  border-top: 6px solid #00ff00;
+  border-bottom: 6px solid #00ffff;
+  border-radius: 50%;
+  animation: neon-spin 1.2s linear infinite;
+  box-shadow: 0 0 30px #00ff00, 0 0 50px #00ffff;
+  margin-bottom: 2rem;
+}
+
+@keyframes neon-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.neon-loader-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.5rem;
+  color: #00ffff;
+  text-transform: uppercase;
+  letter-spacing: 0.3rem;
+  text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+  }
+  50% {
+    opacity: 0.7;
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff;
+  }
+}
+
+/* ============================================ */
+/* TOASTR CYBERPUNK THEME OVERRIDE */
+/* ============================================ */
+#toast-container > .toast-success {
+  background-color: #00ff00 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.7) !important;
+  border: 1px solid #00ff00 !important;
+}
+
+#toast-container > .toast-info {
+  background-color: #00ffff !important;
+  color: #0a0a0a !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.7) !important;
+  border: 1px solid #00ffff !important;
+}
+
+#toast-container > .toast-warning {
+  background-color: #ffaa00 !important;
+  color: #0a0a0a !important;
+  box-shadow: 0 0 15px rgba(255, 170, 0, 0.7) !important;
+  border: 1px solid #ffaa00 !important;
+}
+
+#toast-container > .toast-error {
+  background-color: #ff3333 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 15px rgba(255, 51, 51, 0.7) !important;
+  border: 1px solid #ff3333 !important;
+}
+
+#toast-container > div {
+  opacity: 1 !important;
+  transition: opacity 0.3s ease, transform 0.3s ease !important;
+}
+
+#toast-container .toast-title {
+  font-weight: 700 !important;
+  font-family: 'Share Tech Mono', monospace !important;
+}
+
+#toast-container .toast-message {
+  font-family: 'IBM Plex Mono', monospace !important;
+}
+
+/* ============================================ */
+/* CYBERPUNK SCROLLBAR STYLING */
+/* ============================================ */
+/* Body Scrollbar */
+body::-webkit-scrollbar {
+  width: 14px;
+}
+
+body::-webkit-scrollbar-track {
+  background: #000000;
+  border: 2px solid rgba(0, 255, 0, 0.5);
+  box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.3);
+}
+
+body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ff00, #00cc00);
+  border-radius: 8px;
+  border: 2px solid #000000;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00ffff, #00cccc);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+/* Manual Form Inputs Scrollbar */
+#manual-form-inputs::-webkit-scrollbar {
+  width: 12px;
+}
+
+#manual-form-inputs::-webkit-scrollbar-track {
+  background: #000000;
+  border: 2px solid rgba(0, 255, 0, 0.5);
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+#manual-form-inputs::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ff00, #00cc00);
+  border-radius: 8px;
+  border: 2px solid #000000;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+#manual-form-inputs::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00ffff, #00cccc);
+  box-shadow: 0 0 18px rgba(0, 255, 255, 1), 0 0 25px rgba(0, 255, 255, 0.5);
+}
+
+/* Firefox scrollbar support */
+body,
+#manual-form-inputs {
+  scrollbar-width: thin;
+  scrollbar-color: #00ff00 #000000;
+}
+
+/* ============================================ */
+/* LAYOUT SPACING ENHANCEMENT */
+/* ============================================ */
+.file-input-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================ */
+/* THREAT RECORDS PANEL */
+/* ============================================ */
+#threat-records-panel {
+  display: none;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #ff3333;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
+}
+
+#threat-records-panel.active {
+  display: block;
+}
+
+.threat-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.threat-panel-title {
+  font-size: 1.3rem;
+  color: #ff3333;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  text-shadow: 0 0 10px #ff3333;
+}
+
+.threat-panel-toggle {
+  font-size: 1.5rem;
+  color: #00ffff;
+  transition: transform 0.3s ease;
+}
+
+.threat-panel-toggle.collapsed {
+  transform: rotate(-90deg);
+}
+
+.threat-panel-content {
+  max-height: 300px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.threat-panel-content.collapsed {
+  max-height: 0;
+}
+
+.threat-indices-list {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 51, 51, 0.3);
+}
+
+.threat-index-item {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  margin: 0.2rem;
+  background: rgba(255, 51, 51, 0.2);
+  border: 1px solid #ff3333;
+  border-radius: 4px;
+  color: #ff3333;
+  font-size: 0.9rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.threat-more-text {
+  color: #00ffff;
+  font-style: italic;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.download-threat-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #ff3333, #ff6666);
+  color: #ffffff;
+  border: none;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 51, 51, 0.5);
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.download-threat-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(255, 51, 51, 0.8);
+  background: linear-gradient(135deg, #ff4444, #ff7777);
+}

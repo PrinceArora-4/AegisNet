@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AegisNet</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- jQuery -->
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Toastr -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- NEON LOADER OVERLAY -->
+    <div id="neon-loader">
+      <div class="neon-spinner"></div>
+      <div class="neon-loader-text">ANALYZING NETWORK FLOWS...</div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="header-title">[AEGISNET]</div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+      <div class="grid-container">
+        <!-- COLUMN 1: UPLOAD SECTION -->
+        <div class="panel">
+          <h2 class="panel-title">⬆️ Data Upload Core</h2>
+
+          <!-- Drag and Drop Zone -->
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-text">🗂️ DRAG & DROP CSV FILE</div>
+            <div class="dropzone-subtext">or click to browse</div>
+          </div>
+
+          <!-- File Input -->
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              id="fileInput"
+              class="file-input"
+              accept=".csv"
+            />
+            <label for="fileInput" class="file-input-label"
+              >📁 SELECT FILE</label
+            >
+          </div>
+
+          <!-- File Name Display -->
+          <div class="file-name" id="fileName"></div>
+
+          <!-- Submit Button -->
+          <button class="submit-btn" id="submitBtn" disabled>
+            🛡️ INITIATE ANALYSIS
+          </button>
+
+          <!-- Loading Spinner -->
+          <div class="spinner" id="spinner"></div>
+
+          <!-- MANUAL ANALYSIS SECTION -->
+          <div class="manual-section">
+            <h2 class="manual-title">:: MANUAL ANALYSIS CORE ::</h2>
+
+            <!-- ✅ Restored scrollable container -->
+            <form id="manual-form">
+              <div id="manual-form-inputs"></div>
+              <button
+                type="submit"
+                class="submit-btn manual-submit-btn"
+                id="manual-submit-btn"
+              >
+                🔍 ANALYZE SINGLE FLOW
+              </button>
+            </form>
+
+            <div class="manual-result" id="manual-result">
+              ⏳ Awaiting single-flow analysis...
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMN 2: RESULTS SECTION -->
+        <div class="panel">
+          <h2 class="panel-title">📊 Data Analysis Core</h2>
+
+          <div class="results-section" id="resultsSection">
+            <div class="awaiting-data" id="awaitingData">
+              ⏳ AWAITING DATA...
+            </div>
+
+            <div
+              class="chart-container"
+              id="chartContainer"
+              style="display: none"
+            >
+              <canvas id="threatChart"></canvas>
+            </div>
+
+            <div
+              class="readout-container"
+              id="readoutContainer"
+              style="display: none"
+            >
+              <div class="readout-item">
+                <span class="readout-label">Total Flows Analyzed:</span>
+                <span class="readout-value" id="totalFlows">--</span>
+              </div>
+              <div class="readout-item">
+                <span class="readout-label">Benign Flows Detected:</span>
+                <span class="readout-value" id="benignFlows">--</span>
+              </div>
+              <div class="readout-item threat">
+                <span class="readout-label">⚠️ Threats Identified:</span>
+                <span class="readout-value" id="threatFlows">--</span>
+              </div>
+            </div>
+
+            <!-- THREAT RECORDS PANEL -->
+            <div id="threat-records-panel">
+              <div class="threat-panel-header" id="threat-panel-header">
+                <h3 class="threat-panel-title">⚠️ Threat Records Identified</h3>
+                <span class="threat-panel-toggle" id="threat-panel-toggle"
+                  >▼</span
+                >
+              </div>
+              <div class="threat-panel-content" id="threat-panel-content">
+                <div class="threat-indices-list" id="threat-indices-list"></div>
+                <div
+                  class="threat-more-text"
+                  id="threat-more-text"
+                  style="display: none"
+                ></div>
+                <button class="download-threat-btn" id="download-threat-btn">
+                  📥 Download Threat Log
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validation logic is centralized in script.js to avoid duplicate handlers -->
+
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+  </body>
+</html>

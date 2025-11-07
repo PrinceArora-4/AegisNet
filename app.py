@@ -5,13 +5,16 @@ A production-ready REST API for network intrusion detection.
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
 try:
     from tensorflow.keras.models import load_model
 except Exception:
     try:
         from keras.models import load_model
     except Exception:
-        raise ImportError("Could not import 'load_model' from 'tensorflow.keras' or 'keras'. Please install 'tensorflow' or 'keras' in your environment.")
+        raise ImportError(
+            "Could not import 'load_model' from 'tensorflow.keras' or 'keras'. Please install 'tensorflow' or 'keras' in your environment."
+        )
 import numpy as np
 import pandas as pd
 import joblib
@@ -159,6 +162,9 @@ def predict():
         attack_count = np.sum(predictions == 1)
         benign_count = np.sum(predictions == 0)
 
+        # Get threat indices (1-based row numbers for user-friendly display)
+        threat_indices = [int(i + 1) for i, pred in enumerate(predictions) if pred == 1]
+
         # Return success response
         return jsonify(
             {
@@ -166,6 +172,7 @@ def predict():
                 "total_flows": total_flows,
                 "attack_count": int(attack_count),
                 "benign_count": int(benign_count),
+                "threat_indices": threat_indices,
             }
         ), 200
 
