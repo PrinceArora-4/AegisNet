@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Validation passed - proceed with analysis
     console.log(`🚀 Starting analysis for file: ${file.name}`);
-    consoleLog('> Initializing Sentinel Core...', 'info');
+    consoleLog('> Initializing AegisNet Core...', 'info');
     submitBtn.disabled = true;
     showLoader();
     toastr.info('🔍 Analyzing file... Please wait.', 'Processing');
@@ -566,8 +566,8 @@ document.addEventListener('DOMContentLoaded', () => {
         : '0.00';
     insightsLine.textContent = `Out of ${total_flows.toLocaleString()} total flows, ${attack_count.toLocaleString()} (${pct}%) were identified as potential threats.`;
     metricThreatPct.textContent = `${pct}%`;
-    metricBenignCount.textContent = `${benign_count.toLocaleString()} benign`;
-    metricAttackCount.textContent = `${attack_count.toLocaleString()} threats`;
+    metricBenignCount.textContent = `${benign_count.toLocaleString()} Benign`;
+    metricAttackCount.textContent = `${attack_count.toLocaleString()} Threats`;
     quickInsights.style.display = 'block';
     requestAnimationFrame(() => quickInsights.classList.add('show'));
 

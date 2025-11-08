@@ -55,7 +55,7 @@ logger = logging.getLogger("aegisnet")
 
 try:
     # Load the trained Keras model
-    model_path = "models/aegisnet_v1.keras"
+    model_path = "models/aegisnet.keras"
     # Use placeholder formatting (avoid mixing f-string with %s)
     logger.info("Loading model from: %s", model_path)
     model = load_model(model_path)

@@ -7,7 +7,7 @@ import sys
 from tensorflow.keras.models import load_model
 from src.config import SCALER_SAVE_PATH, TOP_FEATURES, CLASSIFICATION_THRESHOLD
 
-MODEL_SAVE_PATH = "models/aegisnet_v1.keras"
+MODEL_SAVE_PATH = "models/aegisnet.keras"
 
 
 def clean_column_names(df):

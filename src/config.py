@@ -21,8 +21,8 @@ TARGET_COLUMN = "Label"
 
 # Reports directory and plot paths
 REPORTS_DIR = "reports"
-ACC_PLOT_PATH = "reports/aegisnet_v1_accuracy.png"
-LOSS_PLOT_PATH = "reports/aegisnet_v1_loss.png"
+ACC_PLOT_PATH = "reports/aegisnet_accuracy.png"
+LOSS_PLOT_PATH = "reports/aegisnet_loss.png"
 
 # Classification threshold for predictions
 CLASSIFICATION_THRESHOLD = 0.90
